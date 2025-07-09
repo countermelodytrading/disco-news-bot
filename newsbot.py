@@ -29,6 +29,10 @@ KEYWORDS = [kw.lower() for kw in KEYWORDS]
 LOOKBACK_MINUTES = 2
 CACHE_FILE = 'seen_posts.json'
 
+# --- POLLING INTERVALS (in seconds) ---
+TWITTER_POLL_INTERVAL = 20
+TRUTH_POLL_INTERVAL = 90
+
 # --- LOGGING ---
 logging.basicConfig(filename='newsbot.log', level=logging.INFO, format='%(asctime)s %(levelname)s:%(message)s')
 
@@ -98,13 +102,30 @@ def scrape_truth_social():
 
 # --- MAIN LOOP ---
 def main():
+    logging.info("News bot is starting up.")
+    send_to_discord("System", "✅ News bot is live and monitoring.")
+
+    last_truth_check = 0
+    last_twitter_check = 0
+
     while True:
-        try:
-            scrape_twitter()
-            scrape_truth_social()
-        except Exception as e:
-            logging.error(f"Main loop error: {e}\n{traceback.format_exc()}")
-        time.sleep(60)
+        now = time.time()
+
+        if now - last_twitter_check >= TWITTER_POLL_INTERVAL:
+            try:
+                scrape_twitter()
+                last_twitter_check = now
+            except Exception as e:
+                logging.error(f"Twitter scrape error: {e}\n{traceback.format_exc()}")
+
+        if now - last_truth_check >= TRUTH_POLL_INTERVAL:
+            try:
+                scrape_truth_social()
+                last_truth_check = now
+            except Exception as e:
+                logging.error(f"Truth Social scrape error: {e}\n{traceback.format_exc()}")
+
+        time.sleep(5)
 
 if __name__ == "__main__":
     main()
