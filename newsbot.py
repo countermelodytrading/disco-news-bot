@@ -8,9 +8,13 @@ import traceback
 import os
 import json
 
+print("🚀 Script started")
+
 # --- CONFIG ---
 from dotenv import load_dotenv
 load_dotenv()
+
+logging.info("🚀 Script started")
 
 DISCORD_WEBHOOK_URL = os.getenv('DISCORD_WEBHOOK_URL')
 TWITTER_USERS = ['zerohedge', 'unusual_whales', 'KobeissiLetter', 'POTUS', 'realDonaldTrump', 'Newsquawk', 'WatcherGuru']
