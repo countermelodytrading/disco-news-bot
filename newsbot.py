@@ -1,4 +1,5 @@
 import snscrape.modules.twitter as sntwitter
+from snscrape.base import ScraperException
 import requests
 import re
 from datetime import datetime, timedelta
@@ -58,6 +59,12 @@ def send_to_discord(source, headline):
 
 # --- TWITTER SCRAPE ---
 def scrape_twitter():
+    # Patch SSL verification (skip certificate checks)
+    import ssl
+    import urllib3
+    urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
+    
+
     cutoff_time = datetime.utcnow() - timedelta(minutes=LOOKBACK_MINUTES)
     for user in TWITTER_USERS:
         try:
@@ -68,6 +75,8 @@ def scrape_twitter():
                 text = tweet.content.lower()
                 if any(keyword in text for keyword in KEYWORDS):
                     send_to_discord(user, tweet.content)
+        except ScraperException as e:
+            logging.warning(f"Non-fatal scraper error for {user}: {e}")
         except Exception as e:
             logging.error(f"Error scraping Twitter for {user}: {e}\n{traceback.format_exc()}")
 
