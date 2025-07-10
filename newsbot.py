@@ -57,6 +57,21 @@ def send_to_discord(source, headline):
     except Exception as e:
         logging.error(f"Error sending to Discord: {e}")
 
+# --- DISABLE SSL VERIFICATION FOR REQUESTS ---
+import requests.adapters
+import urllib3
+
+class UnsafeHTTPSAdapter(requests.adapters.HTTPAdapter):
+    def init_poolmanager(self, *args, **kwargs):
+        kwargs['cert_reqs'] = 'CERT_NONE'
+        kwargs['assert_hostname'] = False
+        super().init_poolmanager(*args, **kwargs)
+
+# Patch global session to disable SSL verification
+session = requests.Session()
+session.mount('https://', UnsafeHTTPSAdapter())
+requests.Session = lambda: session
+
 # --- TWITTER SCRAPE ---
 def scrape_twitter():
     # Patch SSL verification (skip certificate checks)
